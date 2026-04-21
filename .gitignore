@@ -215,3 +215,7 @@ docs/src/openapi.json
 flamegraph*.html
 **/otel_profile_results.csv
 **/trace.json
+
+# npm pack / inspect artifacts
+.npm-inspect/
+*.tgz
