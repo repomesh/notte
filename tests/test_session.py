@@ -18,7 +18,6 @@ from notte_core.actions.actions import ScrapeAction
 from notte_core.browser.snapshot import BrowserSnapshot
 from notte_core.errors.actions import InvalidActionError
 from notte_llm.service import LLMService
-from pydantic import ValidationError
 
 from tests.mock.mock_browser import MockBrowserDriver
 from tests.mock.mock_service import MockLLMService
@@ -285,9 +284,12 @@ async def test_execute_with_custom_timeout() -> None:
         assert result is not None
 
 
-def test_interaction_action_rejects_non_positive_timeout() -> None:
-    with pytest.raises(ValidationError):
-        _ = ClickAction(id="B1", timeout=0)
+def test_interaction_action_zero_timeout_uses_default_config_timeout() -> None:
+    from notte_core.common.config import config
+
+    action = ClickAction(id="B1", timeout=0)
+
+    assert action.timeout == config.timeout_action_ms
 
 
 @pytest.mark.asyncio

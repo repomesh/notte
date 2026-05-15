@@ -987,7 +987,7 @@ class InteractionAction(BaseAction, metaclass=ABCMeta):
     press_enter: bool | None = Field(default=None)
     text_label: str | None = Field(default=None)
     param: ActionParameter | None = Field(default=None, exclude=True)
-    timeout: int = Field(default=config.timeout_action_ms, gt=0, description="Action timeout in milliseconds")
+    timeout: int = Field(default=config.timeout_action_ms, ge=0, description="Action timeout in milliseconds")
 
     INTERACTION_ACTION_REGISTRY: ClassVar[dict[str, typeAlias["InteractionAction"]]] = {}
 
@@ -996,6 +996,14 @@ class InteractionAction(BaseAction, metaclass=ABCMeta):
     def cleanup_id(cls, value: str) -> str:
         if value.endswith("[:]"):
             return value[:-3]
+        return value
+
+    @field_validator("timeout")
+    @classmethod
+    def use_default_timeout_when_zero(cls, value: int) -> int:
+        # Playwright treats timeout=0 as infinite; keep LLM-provided zero bounded.
+        if value == 0:
+            return config.timeout_action_ms
         return value
 
     @model_validator(mode="before")
